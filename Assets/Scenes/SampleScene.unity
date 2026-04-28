@@ -156,6 +156,8 @@ MonoBehaviour:
   bulletPrefab: {fileID: 4852067163742994411, guid: 7cbf7a7d09da34546994e3a3c903ad26, type: 3}
   firePoint: {fileID: 439024751}
   fireForce: 20
+  recoilAmount: 0.3
+  recoilRecoverSpeed: 3.5
 --- !u!4 &311992016
 Transform:
   m_ObjectHideFlags: 0
