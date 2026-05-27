@@ -8,6 +8,9 @@ public class EnemySpawner : MonoBehaviour
 
     public float spawnDistance = 10f;
 
+    // Maximum enemies allowed
+    public int maxEnemies = 24;
+
     private Transform player;
 
     private float nextSpawnTime;
@@ -19,7 +22,13 @@ public class EnemySpawner : MonoBehaviour
 
     void Update()
     {
-        if (Time.time >= nextSpawnTime)
+        // Count current enemies
+        int currentEnemies =
+            GameObject.FindGameObjectsWithTag("Enemy").Length;
+
+        // Only spawn if below limit
+        if (Time.time >= nextSpawnTime &&
+            currentEnemies < maxEnemies)
         {
             SpawnEnemy();
 
@@ -30,12 +39,16 @@ public class EnemySpawner : MonoBehaviour
     void SpawnEnemy()
     {
         // Random direction
-        Vector2 randomDirection = Random.insideUnitCircle.normalized;
+        Vector2 randomDirection =
+            Random.insideUnitCircle.normalized;
 
         // Spawn position around player
         Vector2 spawnPosition =
-            (Vector2)player.position + randomDirection * spawnDistance;
+            (Vector2)player.position +
+            randomDirection * spawnDistance;
 
-        Instantiate(enemyPrefab, spawnPosition, Quaternion.identity);
+        Instantiate(enemyPrefab,
+                    spawnPosition,
+                    Quaternion.identity);
     }
 }
