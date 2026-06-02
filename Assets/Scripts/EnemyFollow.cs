@@ -5,22 +5,36 @@ public class EnemyFollow : MonoBehaviour
     public float moveSpeed = 3f;
 
     private Transform player;
+    private Rigidbody2D rb;
 
     void Start()
     {
-        // Find the player by tag
-        player = GameObject.FindGameObjectWithTag("Player").transform;
+        GameObject playerObj =
+            GameObject.FindGameObjectWithTag("Player");
+
+        if (playerObj != null)
+            player = playerObj.transform;
+
+        rb = GetComponent<Rigidbody2D>();
     }
 
-    void Update()
+    void FixedUpdate()
     {
         if (player == null)
             return;
 
-        // Direction toward player
-        Vector2 direction = (player.position - transform.position).normalized;
+        Vector2 direction =
+            ((Vector2)player.position - rb.position).normalized;
 
-        // Move toward player
-        transform.position += (Vector3)(direction * moveSpeed * Time.deltaTime);
+        rb.MovePosition(rb.position + direction * moveSpeed * Time.fixedDeltaTime);
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            GameManager.instance.GameOver();
+            Destroy(collision.gameObject);
+        }
     }
 }

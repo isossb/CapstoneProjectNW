@@ -19,6 +19,13 @@ public class PlayerController : MonoBehaviour
     [Header("UI")]
     public TextMeshProUGUI dashText;
 
+    [Header("Visual Effects")]
+    public TrailRenderer dashTrail;
+
+    // Public so other scripts can check it
+    [HideInInspector]
+    public bool isInvincible = false;
+
     private Vector2 moveDirection;
     private Vector2 mousePosition;
     private Vector2 dashDirection;
@@ -50,7 +57,7 @@ public class PlayerController : MonoBehaviour
         {
             dashDirection = moveDirection;
 
-            // If no movement input, dash toward mouse
+            // If standing still, dash toward mouse
             if (dashDirection == Vector2.zero)
             {
                 dashDirection = (mousePosition - rb.position).normalized;
@@ -64,7 +71,7 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        // Normal movement (disabled while dashing)
+        // Normal movement disabled during dash
         if (!isDashing)
         {
             rb.velocity = moveDirection * moveSpeed;
@@ -79,20 +86,37 @@ public class PlayerController : MonoBehaviour
     IEnumerator Dash()
     {
         isDashing = true;
+        isInvincible = true;
         canDash = false;
+
+        // Enable dash trail
+        if (dashTrail != null)
+        {
+            dashTrail.Clear();
+            dashTrail.enabled = true;
+        }
 
         float startTime = Time.time;
 
-        // Dash movement phase
         while (Time.time < startTime + dashTime)
         {
             rb.velocity = dashDirection.normalized * dashSpeed;
             yield return null;
         }
 
-        isDashing = false;
+        // Stop dash movement
+        rb.velocity = Vector2.zero;
 
-        // Cooldown phase
+        isDashing = false;
+        isInvincible = false;
+
+        // Allow trail to fade naturally
+        if (dashTrail != null)
+        {
+            StartCoroutine(FadeTrailOff());
+        }
+
+        // Cooldown timer
         dashCooldownTimer = dashCooldown;
 
         while (dashCooldownTimer > 0)
@@ -104,9 +128,20 @@ public class PlayerController : MonoBehaviour
         canDash = true;
     }
 
+    IEnumerator FadeTrailOff()
+    {
+        yield return new WaitForSeconds(dashTrail.time);
+
+        if (dashTrail != null)
+        {
+            dashTrail.enabled = false;
+        }
+    }
+
     void UpdateDashUI()
     {
-        if (dashText == null) return;
+        if (dashText == null)
+            return;
 
         if (canDash)
         {

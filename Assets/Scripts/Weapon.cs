@@ -8,9 +8,15 @@ public class Weapon : MonoBehaviour
     public Transform firePoint;
     public float fireForce = 20f;
 
+    [Header("Automatic Fire")]
+    public float fireRate = 10f; // bullets per second
+
     [Header("Recoil Visual Effect")]
-    public float recoilAmount = 0.2f;      // How much the rectangle shrinks
-    public float recoilRecoverSpeed = 5f;  // How fast it returns to normal
+    public float recoilAmount = 0.2f;
+    public float recoilRecoverSpeed = 5f;
+
+    private float nextFireTime = 0f;
+    private bool isFiring = false;
 
     private Vector3 originalScale;
     private Vector3 originalPosition;
@@ -24,7 +30,21 @@ public class Weapon : MonoBehaviour
 
     void Update()
     {
-        // Gradually return to original size and position
+        // INPUT HANDLING (automatic fire)
+        if (Input.GetMouseButtonDown(0))
+            isFiring = true;
+
+        if (Input.GetMouseButtonUp(0))
+            isFiring = false;
+
+        // FIRE CONTROL (rate-limited)
+        if (isFiring && Time.time >= nextFireTime)
+        {
+            Fire();
+            nextFireTime = Time.time + (1f / fireRate);
+        }
+
+        // RECOIL RECOVERY
         if (isRecoiling)
         {
             transform.localScale = Vector3.Lerp(
@@ -39,7 +59,6 @@ public class Weapon : MonoBehaviour
                 Time.deltaTime * recoilRecoverSpeed
             );
 
-            // Stop tiny endless lerping
             if (Vector3.Distance(transform.localScale, originalScale) < 0.01f)
             {
                 transform.localScale = originalScale;
@@ -51,7 +70,6 @@ public class Weapon : MonoBehaviour
 
     public void Fire()
     {
-        // Spawn bullet
         GameObject bullet = Instantiate(
             bulletPrefab,
             firePoint.position,
@@ -68,10 +86,8 @@ public class Weapon : MonoBehaviour
 
     void ApplyRecoil()
     {
-        // Shrink from the top while keeping the bottom fixed
-
-        // Reduce height (Y scale)
         float newYScale = originalScale.y - recoilAmount;
+
         if (newYScale < 0.1f)
             newYScale = 0.1f;
 
@@ -81,8 +97,8 @@ public class Weapon : MonoBehaviour
             originalScale.z
         );
 
-        // Move object upward/downward so bottom stays fixed
         float heightDifference = originalScale.y - newYScale;
+
         transform.localPosition = originalPosition - new Vector3(
             0,
             heightDifference / 2f,
