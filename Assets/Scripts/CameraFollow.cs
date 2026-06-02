@@ -16,8 +16,6 @@ public class CameraFollow : MonoBehaviour
             return;
 
         Vector3 targetPosition = target.position + offset;
-
-        // FORCE camera Z so it always renders 2D world correctly
         targetPosition.z = -10f;
 
         transform.position = Vector3.SmoothDamp(
