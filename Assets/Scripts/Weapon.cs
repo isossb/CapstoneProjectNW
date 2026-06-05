@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,15 +8,13 @@ public class Weapon : MonoBehaviour
     public Transform firePoint;
     public float fireForce = 20f;
 
-    [Header("Automatic Fire")]
+    [Header("Fire Rate")]
     public float fireRate = 10f; // bullets per second
+    private float nextFireTime = 0f;
 
     [Header("Recoil Visual Effect")]
     public float recoilAmount = 0.2f;
     public float recoilRecoverSpeed = 5f;
-
-    private float nextFireTime = 0f;
-    private bool isFiring = false;
 
     private Vector3 originalScale;
     private Vector3 originalPosition;
@@ -30,21 +28,14 @@ public class Weapon : MonoBehaviour
 
     void Update()
     {
-        // INPUT HANDLING (automatic fire)
-        if (Input.GetMouseButtonDown(0))
-            isFiring = true;
-
-        if (Input.GetMouseButtonUp(0))
-            isFiring = false;
-
-        // FIRE CONTROL (rate-limited)
-        if (isFiring && Time.time >= nextFireTime)
+        // FULL AUTO INPUT
+        if (Input.GetMouseButton(0) && Time.time >= nextFireTime)
         {
             Fire();
             nextFireTime = Time.time + (1f / fireRate);
         }
 
-        // RECOIL RECOVERY
+        // Recoil recovery
         if (isRecoiling)
         {
             transform.localScale = Vector3.Lerp(
