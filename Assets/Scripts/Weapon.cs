@@ -8,9 +8,8 @@ public class Weapon : MonoBehaviour
     public Transform firePoint;
     public float fireForce = 20f;
 
-    [Header("Fire Rate")]
+    [Header("Automatic Fire")]
     public float fireRate = 10f; // bullets per second
-    private float nextFireTime = 0f;
 
     [Header("Recoil Visual Effect")]
     public float recoilAmount = 0.2f;
@@ -20,6 +19,8 @@ public class Weapon : MonoBehaviour
     private Vector3 originalPosition;
     private bool isRecoiling = false;
 
+    private float nextFireTime;
+
     void Start()
     {
         originalScale = transform.localScale;
@@ -28,14 +29,14 @@ public class Weapon : MonoBehaviour
 
     void Update()
     {
-        // FULL AUTO INPUT
+        // Hold left mouse button for automatic fire
         if (Input.GetMouseButton(0) && Time.time >= nextFireTime)
         {
             Fire();
             nextFireTime = Time.time + (1f / fireRate);
         }
 
-        // Recoil recovery
+        // Gradually return to original size and position
         if (isRecoiling)
         {
             transform.localScale = Vector3.Lerp(
@@ -67,10 +68,15 @@ public class Weapon : MonoBehaviour
             firePoint.rotation
         );
 
-        bullet.GetComponent<Rigidbody2D>().AddForce(
-            firePoint.up * fireForce,
-            ForceMode2D.Impulse
-        );
+        Rigidbody2D bulletRb = bullet.GetComponent<Rigidbody2D>();
+
+        if (bulletRb != null)
+        {
+            bulletRb.AddForce(
+                firePoint.up * fireForce,
+                ForceMode2D.Impulse
+            );
+        }
 
         ApplyRecoil();
     }
