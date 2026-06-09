@@ -2,23 +2,20 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
-    [Header("Enemy")]
+    [Header("Enemy Settings")]
     public GameObject enemyPrefab;
+    public int maxEnemies = 24;
 
-    [Header("Spawn Timing")]
+    [Header("Spawn Settings")]
     public float spawnRate = 2f;
+    public float spawnDistance = 10f;
 
-    [Header("Spawn Distance")]
-    public float minimumSpawnDistance = 10f;
-    public float maximumSpawnDistance = 15f;
-
-    [Header("Spawn Validation")]
-    public LayerMask obstacleLayer;
+    [Header("Spawn Area Settings")]
+    public LayerMask spawnAreaLayer;
     public int maxSpawnAttempts = 20;
 
     private Transform player;
     private float nextSpawnTime;
-    private Vector2 enemySize;
 
     void Start()
     {
@@ -26,32 +23,33 @@ public class EnemySpawner : MonoBehaviour
             GameObject.FindGameObjectWithTag("Player");
 
         if (playerObj != null)
+        {
             player = playerObj.transform;
-
-        // Automatically get enemy collider size
-        BoxCollider2D enemyCollider =
-            enemyPrefab.GetComponent<BoxCollider2D>();
-
-        if (enemyCollider != null)
-        {
-            enemySize = enemyCollider.size;
-        }
-        else
-        {
-            // Fallback size if no BoxCollider2D found
-            enemySize = Vector2.one;
         }
     }
 
     void Update()
     {
+        // Stop spawning after game over
         if (GameManager.instance != null &&
             GameManager.instance.isGameOver)
+        {
             return;
+        }
 
+        // Stop if player doesn't exist
         if (player == null)
+        {
             return;
+        }
 
+        // Enemy cap
+        if (GameObject.FindGameObjectsWithTag("Enemy").Length >= maxEnemies)
+        {
+            return;
+        }
+
+        // Spawn timer
         if (Time.time >= nextSpawnTime)
         {
             SpawnEnemy();
@@ -66,26 +64,23 @@ public class EnemySpawner : MonoBehaviour
 
         for (int i = 0; i < maxSpawnAttempts; i++)
         {
+            // Random direction around player
             Vector2 randomDirection =
                 Random.insideUnitCircle.normalized;
 
-            float distance = Random.Range(
-                minimumSpawnDistance,
-                maximumSpawnDistance
-            );
-
+            // Candidate spawn position
             Vector2 spawnPosition =
                 (Vector2)player.position +
-                randomDirection * distance;
+                randomDirection * spawnDistance;
 
-            Collider2D hit = Physics2D.OverlapBox(
-                spawnPosition,
-                enemySize,
-                0f,
-                obstacleLayer
-            );
+            // Check if position is inside a valid White spawn area
+            Collider2D spawnArea =
+                Physics2D.OverlapPoint(
+                    spawnPosition,
+                    spawnAreaLayer
+                );
 
-            if (hit == null)
+            if (spawnArea != null)
             {
                 Instantiate(
                     enemyPrefab,
@@ -96,23 +91,8 @@ public class EnemySpawner : MonoBehaviour
                 return;
             }
         }
-    }
 
-    void OnDrawGizmosSelected()
-    {
-        if (player == null)
-            return;
-
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(
-            player.position,
-            minimumSpawnDistance
-        );
-
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(
-            player.position,
-            maximumSpawnDistance
-        );
+        // If we get here, no valid spawn location was found
+        Debug.Log("No valid spawn area found.");
     }
 }
