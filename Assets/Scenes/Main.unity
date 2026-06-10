@@ -4856,7 +4856,7 @@ MonoBehaviour:
   fireForce: 20
   fireRate: 10
   recoilAmount: 0
-  recoilRecoverSpeed: 3.5
+  recoilRecoverSpeed: 0
 --- !u!4 &311992016
 Transform:
   m_ObjectHideFlags: 0
