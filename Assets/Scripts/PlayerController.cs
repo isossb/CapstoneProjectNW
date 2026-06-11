@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using TMPro;
 
@@ -22,18 +22,23 @@ public class PlayerController : MonoBehaviour
     [Header("Visual Effects")]
     public TrailRenderer dashTrail;
 
-    // Public so other scripts can check it
     [HideInInspector]
     public bool isInvincible = false;
 
     private Vector2 moveDirection;
-    private Vector2 mousePosition;
     private Vector2 dashDirection;
 
     private bool isDashing = false;
     private bool canDash = true;
 
     private float dashCooldownTimer;
+
+    private Camera cam;
+
+    void Start()
+    {
+        cam = Camera.main;
+    }
 
     void Update()
     {
@@ -43,10 +48,7 @@ public class PlayerController : MonoBehaviour
 
         moveDirection = new Vector2(moveX, moveY).normalized;
 
-        // Mouse position
-        mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-
-        // Shooting (disabled during dash)
+        // Shoot
         if (!isDashing && Input.GetMouseButtonDown(0))
         {
             weapon.Fire();
@@ -55,13 +57,13 @@ public class PlayerController : MonoBehaviour
         // Dash input
         if (Input.GetKeyDown(KeyCode.LeftShift) && canDash && !isDashing)
         {
+            Vector2 mouseWorld =
+                cam.ScreenToWorldPoint(Input.mousePosition);
+
             dashDirection = moveDirection;
 
-            // If standing still, dash toward mouse
             if (dashDirection == Vector2.zero)
-            {
-                dashDirection = (mousePosition - rb.position).normalized;
-            }
+                dashDirection = (mouseWorld - rb.position).normalized;
 
             StartCoroutine(Dash());
         }
@@ -71,16 +73,21 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        // Normal movement disabled during dash
         if (!isDashing)
         {
             rb.velocity = moveDirection * moveSpeed;
         }
 
-        // Aim toward mouse
-        Vector2 aimDirection = mousePosition - rb.position;
-        float aimAngle = Mathf.Atan2(aimDirection.y, aimDirection.x) * Mathf.Rad2Deg - 90f;
-        rb.rotation = aimAngle;
+        // 🔥 FIXED AIM: recompute in physics step
+        Vector2 mouseWorld =
+            cam.ScreenToWorldPoint(Input.mousePosition);
+
+        Vector2 aimDirection = mouseWorld - rb.position;
+
+        float aimAngle =
+            Mathf.Atan2(aimDirection.y, aimDirection.x) * Mathf.Rad2Deg - 90f;
+
+        rb.MoveRotation(aimAngle);
     }
 
     IEnumerator Dash()
@@ -89,7 +96,6 @@ public class PlayerController : MonoBehaviour
         isInvincible = true;
         canDash = false;
 
-        // Enable dash trail
         if (dashTrail != null)
         {
             dashTrail.Clear();
@@ -104,19 +110,16 @@ public class PlayerController : MonoBehaviour
             yield return null;
         }
 
-        // Stop dash movement
         rb.velocity = Vector2.zero;
 
         isDashing = false;
         isInvincible = false;
 
-        // Allow trail to fade naturally
         if (dashTrail != null)
         {
             StartCoroutine(FadeTrailOff());
         }
 
-        // Cooldown timer
         dashCooldownTimer = dashCooldown;
 
         while (dashCooldownTimer > 0)
@@ -133,9 +136,7 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(dashTrail.time);
 
         if (dashTrail != null)
-        {
             dashTrail.enabled = false;
-        }
     }
 
     void UpdateDashUI()

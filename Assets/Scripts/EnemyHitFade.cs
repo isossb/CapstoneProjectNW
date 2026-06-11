@@ -58,6 +58,7 @@ public class EnemyHitFade : MonoBehaviour
         }
 
         // FINAL CLEANUP
+        GameManager.instance.RegisterKill();
         Destroy(gameObject);
     }
 }
