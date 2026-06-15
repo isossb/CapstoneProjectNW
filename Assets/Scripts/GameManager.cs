@@ -20,6 +20,14 @@ public class GameManager : MonoBehaviour
     [Header("UI")]
     public TMP_Text roundText;
 
+    [Header("Audio")]
+    public AudioSource audioSource;
+
+    public AudioClip killSound;
+
+    [Range(0f, 1f)]
+    public float killVolume = 0.8f;
+
     void Awake()
     {
         if (instance == null)
@@ -31,12 +39,30 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         UpdateRoundUI();
+
+        if (audioSource == null)
+        {
+            audioSource =
+                GetComponent<AudioSource>();
+        }
     }
 
     public void RegisterKill()
     {
         totalKills++;
         killsThisRound++;
+
+        // PLAY KILL SOUND
+        if (
+            audioSource != null &&
+            killSound != null
+        )
+        {
+            audioSource.PlayOneShot(
+                killSound,
+                killVolume
+            );
+        }
 
         if (killsThisRound >= killsRequiredForNextRound)
         {
@@ -50,30 +76,37 @@ public class GameManager : MonoBehaviour
 
         killsThisRound = 0;
 
-        // Each round requires 2 more kills
         killsRequiredForNextRound += 2;
 
         UpdateRoundUI();
 
-        Debug.Log("Round " + currentRound);
+        Debug.Log(
+            "Round " +
+            currentRound
+        );
     }
 
     void UpdateRoundUI()
     {
         if (roundText != null)
         {
-            roundText.text = "Round " + currentRound;
+            roundText.text =
+                "Round " +
+                currentRound;
         }
     }
 
     public void GameOver()
     {
-        if (isGameOver) return;
+        if (isGameOver)
+            return;
 
         isGameOver = true;
 
         if (gameOverUI != null)
+        {
             gameOverUI.SetActive(true);
+        }
 
         Debug.Log("GAME OVER");
     }
@@ -87,8 +120,10 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        if (isGameOver &&
-            Input.GetKeyDown(KeyCode.R))
+        if (
+            isGameOver &&
+            Input.GetKeyDown(KeyCode.R)
+        )
         {
             RestartGame();
         }

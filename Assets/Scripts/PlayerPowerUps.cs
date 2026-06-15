@@ -5,67 +5,157 @@ public class PlayerPowerUps : MonoBehaviour
 {
     public PlayerController controller;
     public Weapon weapon;
+
     public PowerUpUI powerUpUI;
+
+    [Header("Audio")]
+    public AudioSource audioSource;
+
+    public AudioClip pickupSound;
+
+    [Range(0f, 1f)]
+    public float pickupVolume = 1f;
+
     private bool infiniteDashActive = false;
 
-    public void ActivatePowerUp(PowerUp.PowerUpType type, float duration)
+    void Start()
+    {
+        if (audioSource == null)
+        {
+            audioSource =
+                GetComponent<AudioSource>();
+        }
+    }
+
+    public void ActivatePowerUp(
+        PowerUp.PowerUpType type,
+        float duration
+    )
     {
         string name = "";
+
+        // PLAY PICKUP SOUND
+        if (
+            audioSource != null &&
+            pickupSound != null
+        )
+        {
+            audioSource.pitch =
+                Random.Range(
+                    0.95f,
+                    1.05f
+                );
+
+            audioSource.PlayOneShot(
+                pickupSound,
+                pickupVolume
+            );
+
+            audioSource.pitch = 1f;
+        }
 
         switch (type)
         {
             case PowerUp.PowerUpType.InfiniteDash:
-                StartCoroutine(InfiniteDash(duration));
-                name = "Infinite Dash";
+
+                StartCoroutine(
+                    InfiniteDash(duration)
+                );
+
+                name =
+                    "Infinite Dash";
+
                 break;
 
             case PowerUp.PowerUpType.SpeedBoost:
-                StartCoroutine(SpeedBoost(duration));
-                name = "Speed Boost";
+
+                StartCoroutine(
+                    SpeedBoost(duration)
+                );
+
+                name =
+                    "Speed Boost";
+
                 break;
 
             case PowerUp.PowerUpType.FireRateBoost:
-                StartCoroutine(FireRateBoost(duration));
-                name = "Fire Rate Boost";
+
+                StartCoroutine(
+                    FireRateBoost(duration)
+                );
+
+                name =
+                    "Fire Rate Boost";
+
                 break;
         }
 
         if (powerUpUI != null)
-            powerUpUI.Activate(name, duration);
+        {
+            powerUpUI.Activate(
+                name,
+                duration
+            );
+        }
     }
 
-    IEnumerator InfiniteDash(float duration)
+    IEnumerator InfiniteDash(
+        float duration
+    )
     {
-        infiniteDashActive = true;
+        infiniteDashActive =
+            true;
 
-        float originalCooldown = controller.dashCooldown;
-        controller.dashCooldown = 0.1f; // almost instant
+        float originalCooldown =
+            controller.dashCooldown;
 
-        yield return new WaitForSeconds(duration);
+        controller.dashCooldown =
+            0.1f;
 
-        controller.dashCooldown = originalCooldown;
-        infiniteDashActive = false;
+        yield return new WaitForSeconds(
+            duration
+        );
+
+        controller.dashCooldown =
+            originalCooldown;
+
+        infiniteDashActive =
+            false;
     }
 
-    IEnumerator SpeedBoost(float duration)
+    IEnumerator SpeedBoost(
+        float duration
+    )
     {
-        float originalSpeed = controller.moveSpeed;
+        float originalSpeed =
+            controller.moveSpeed;
 
-        controller.moveSpeed *= 1.5f;
+        controller.moveSpeed *=
+            1.5f;
 
-        yield return new WaitForSeconds(duration);
+        yield return new WaitForSeconds(
+            duration
+        );
 
-        controller.moveSpeed = originalSpeed;
+        controller.moveSpeed =
+            originalSpeed;
     }
 
-    IEnumerator FireRateBoost(float duration)
+    IEnumerator FireRateBoost(
+        float duration
+    )
     {
-        float originalRate = weapon.fireRate;
+        float originalRate =
+            weapon.fireRate;
 
-        weapon.fireRate *= 2f;
+        weapon.fireRate *=
+            2f;
 
-        yield return new WaitForSeconds(duration);
+        yield return new WaitForSeconds(
+            duration
+        );
 
-        weapon.fireRate = originalRate;
+        weapon.fireRate =
+            originalRate;
     }
 }

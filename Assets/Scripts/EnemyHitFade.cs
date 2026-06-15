@@ -19,7 +19,8 @@ public class EnemyHitFade : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (isDying) return;
+        if (isDying)
+            return;
 
         if (collision.gameObject.CompareTag("Bullet"))
         {
@@ -27,9 +28,13 @@ public class EnemyHitFade : MonoBehaviour
 
             // Knockback
             Vector2 knockDir =
-                (transform.position - collision.transform.position).normalized;
+                (transform.position -
+                collision.transform.position).normalized;
 
-            rb.AddForce(knockDir * knockbackForce, ForceMode2D.Impulse);
+            rb.AddForce(
+                knockDir * knockbackForce,
+                ForceMode2D.Impulse
+            );
 
             StartCoroutine(FadeThenDestroy());
         }
@@ -45,7 +50,12 @@ public class EnemyHitFade : MonoBehaviour
         {
             t += Time.deltaTime;
 
-            float alpha = Mathf.Lerp(1f, 0f, t / fadeDuration);
+            float alpha =
+                Mathf.Lerp(
+                    1f,
+                    0f,
+                    t / fadeDuration
+                );
 
             sr.color = new Color(
                 startColor.r,
@@ -59,6 +69,7 @@ public class EnemyHitFade : MonoBehaviour
 
         // FINAL CLEANUP
         GameManager.instance.RegisterKill();
+
         Destroy(gameObject);
     }
 }

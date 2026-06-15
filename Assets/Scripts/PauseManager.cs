@@ -6,6 +6,8 @@ public class PauseManager : MonoBehaviour
 
     private bool paused = false;
 
+    public static bool IsPaused = false;
+
     void Start()
     {
         pauseMenu.SetActive(false);
@@ -23,21 +25,18 @@ public class PauseManager : MonoBehaviour
     {
         paused = !paused;
 
+        IsPaused = paused;
+
         pauseMenu.SetActive(paused);
 
-        if (paused)
-        {
-            Time.timeScale = 0f;
-        }
-        else
-        {
-            Time.timeScale = 1f;
-        }
+        Time.timeScale = paused ? 0f : 1f;
     }
 
     public void Resume()
     {
         paused = false;
+
+        IsPaused = false;
 
         pauseMenu.SetActive(false);
 

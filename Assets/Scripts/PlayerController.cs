@@ -16,6 +16,13 @@ public class PlayerController : MonoBehaviour
     public float dashTime = 0.15f;
     public float dashCooldown = 4f;
 
+    [Header("Dash Audio")]
+    public AudioSource audioSource;
+    public AudioClip dashSound;
+
+    [Range(0f, 1f)]
+    public float dashVolume = 1f;
+
     [Header("UI")]
     public TextMeshProUGUI dashText;
 
@@ -38,32 +45,54 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         cam = Camera.main;
+
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+        }
     }
 
     void Update()
     {
-        // Movement input
+        if (PauseManager.IsPaused)
+            return;
+
         float moveX = Input.GetAxisRaw("Horizontal");
         float moveY = Input.GetAxisRaw("Vertical");
 
-        moveDirection = new Vector2(moveX, moveY).normalized;
+        moveDirection =
+            new Vector2(moveX, moveY).normalized;
 
-        // Shoot
-        if (!isDashing && Input.GetMouseButtonDown(0))
+        if (!isDashing &&
+            Input.GetMouseButtonDown(0))
         {
             weapon.Fire();
         }
 
-        // Dash input
-        if (Input.GetKeyDown(KeyCode.LeftShift) && canDash && !isDashing)
+        if (
+            Input.GetKeyDown(KeyCode.LeftShift)
+            &&
+            canDash
+            &&
+            !isDashing
+        )
         {
             Vector2 mouseWorld =
-                cam.ScreenToWorldPoint(Input.mousePosition);
+                cam.ScreenToWorldPoint(
+                    Input.mousePosition
+                );
 
-            dashDirection = moveDirection;
+            dashDirection =
+                moveDirection;
 
             if (dashDirection == Vector2.zero)
-                dashDirection = (mouseWorld - rb.position).normalized;
+            {
+                dashDirection =
+                    (
+                        mouseWorld -
+                        rb.position
+                    ).normalized;
+            }
 
             StartCoroutine(Dash());
         }
@@ -75,19 +104,33 @@ public class PlayerController : MonoBehaviour
     {
         if (!isDashing)
         {
-            rb.velocity = moveDirection * moveSpeed;
+            rb.velocity =
+                moveDirection *
+                moveSpeed;
         }
 
-        // 🔥 FIXED AIM: recompute in physics step
         Vector2 mouseWorld =
-            cam.ScreenToWorldPoint(Input.mousePosition);
+            cam.ScreenToWorldPoint(
+                Input.mousePosition
+            );
 
-        Vector2 aimDirection = mouseWorld - rb.position;
+        Vector2 aimDirection =
+            mouseWorld -
+            rb.position;
 
         float aimAngle =
-            Mathf.Atan2(aimDirection.y, aimDirection.x) * Mathf.Rad2Deg - 90f;
+            Mathf.Atan2(
+                aimDirection.y,
+                aimDirection.x
+            )
+            *
+            Mathf.Rad2Deg
+            -
+            90f;
 
-        rb.MoveRotation(aimAngle);
+        rb.MoveRotation(
+            aimAngle
+        );
     }
 
     IEnumerator Dash()
@@ -96,35 +139,71 @@ public class PlayerController : MonoBehaviour
         isInvincible = true;
         canDash = false;
 
+        // PLAY DASH SOUND
+        if (
+            audioSource != null &&
+            dashSound != null
+        )
+        {
+            audioSource.pitch =
+                Random.Range(
+                    0.97f,
+                    1.03f
+                );
+
+            audioSource.PlayOneShot(
+                dashSound,
+                dashVolume
+            );
+
+            audioSource.pitch = 1f;
+        }
+
         if (dashTrail != null)
         {
             dashTrail.Clear();
             dashTrail.enabled = true;
         }
 
-        float startTime = Time.time;
+        float startTime =
+            Time.time;
 
-        while (Time.time < startTime + dashTime)
+        while (
+            Time.time <
+            startTime + dashTime
+        )
         {
-            rb.velocity = dashDirection.normalized * dashSpeed;
+            rb.velocity =
+                dashDirection.normalized *
+                dashSpeed;
+
             yield return null;
         }
 
-        rb.velocity = Vector2.zero;
+        rb.velocity =
+            Vector2.zero;
 
         isDashing = false;
         isInvincible = false;
 
         if (dashTrail != null)
         {
-            StartCoroutine(FadeTrailOff());
+            StartCoroutine(
+                FadeTrailOff()
+            );
         }
 
-        dashCooldownTimer = dashCooldown;
+        dashCooldownTimer =
+            dashCooldown;
 
-        while (dashCooldownTimer > 0)
+        while (
+            dashCooldownTimer >
+            0
+        )
         {
-            dashCooldownTimer -= Time.deltaTime;
+            dashCooldownTimer -=
+                Time.deltaTime;
+
             yield return null;
         }
 
@@ -133,10 +212,15 @@ public class PlayerController : MonoBehaviour
 
     IEnumerator FadeTrailOff()
     {
-        yield return new WaitForSeconds(dashTrail.time);
+        yield return new WaitForSeconds(
+            dashTrail.time
+        );
 
         if (dashTrail != null)
-            dashTrail.enabled = false;
+        {
+            dashTrail.enabled =
+                false;
+        }
     }
 
     void UpdateDashUI()
@@ -146,13 +230,22 @@ public class PlayerController : MonoBehaviour
 
         if (canDash)
         {
-            dashText.text = "Dash Ready";
-            dashText.color = Color.green;
+            dashText.text =
+                "Dash Ready";
+
+            dashText.color =
+                Color.green;
         }
         else
         {
-            dashText.text = "Dash: " + dashCooldownTimer.ToString("0.0");
-            dashText.color = Color.red;
+            dashText.text =
+                "Dash: "
+                +
+                dashCooldownTimer
+                .ToString("0.0");
+
+            dashText.color =
+                Color.red;
         }
     }
 }

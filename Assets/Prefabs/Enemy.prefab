@@ -138,7 +138,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 3
-  obstacleDetectionDistance: 1
+  obstacleDetectionDistance: 0.1
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 128
@@ -156,3 +156,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fadeDuration: 0.1
   knockbackForce: 5
+  deathSound: {fileID: 8300000, guid: 09f634dfafc05604580f9f42bc32ce14, type: 3}
+  deathVolume: 1
