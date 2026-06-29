@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PauseManager : MonoBehaviour
 {
@@ -41,5 +42,12 @@ public class PauseManager : MonoBehaviour
         pauseMenu.SetActive(false);
 
         Time.timeScale = 1f;
+    }
+
+    public void ReturnToMainMenu()
+    {
+        Time.timeScale = 1f; // IMPORTANT: reset time before switching scenes
+
+        SceneManager.LoadScene("Title");
     }
 }
